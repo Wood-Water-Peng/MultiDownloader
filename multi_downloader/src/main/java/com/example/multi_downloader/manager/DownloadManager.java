@@ -1,6 +1,7 @@
 package com.example.multi_downloader.manager;
 
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.example.multi_downloader.DB.DBManager;
 import com.example.multi_downloader.bean.DownloadInfo;
@@ -14,6 +15,7 @@ import com.example.multi_downloader.utils.UIUtil;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,14 +32,13 @@ public class DownloadManager implements DownloadFileListener {
     private DownloadConfig config;
     private final List<DownloadInfo> downloadingCaches;    //任务---正在下载
     private final List<DownloadInfo> waitingCaches;    //任务---等待中
-    private final ConcurrentHashMap<Long, TotalDownloadTask> cacheDownloadTask;   //key--DownloadInfo的Id
+    private final SparseArray<TotalDownloadTask> cacheDownloadTask = new SparseArray<>();//key--DownloadInfo的Id
 
     private DownloadManager(DownloadConfig config) {
         engine = new DownloadEngine(config);
         this.config = config;
         downloadingCaches = new ArrayList<>();
         waitingCaches = new ArrayList<>();
-        cacheDownloadTask = new ConcurrentHashMap<>();
     }
 
     public static DownloadManager getInstance(DownloadConfig config) {
@@ -71,11 +72,11 @@ public class DownloadManager implements DownloadFileListener {
                 }
             }
         } else {
-            TotalDownloadTask task = cacheDownloadTask.get(downloadInfo.getId());
+            TotalDownloadTask task = cacheDownloadTask.get(downloadInfo.getId().intValue());
             if (task != null) {
                 task.pause();
                 downloadingCaches.remove(downloadInfo);
-                cacheDownloadTask.remove(downloadInfo.getId());
+                cacheDownloadTask.remove(downloadInfo.getId().intValue());
                 //通知界面刷新
                 downloadInfo.setStatus(DownloadInfo.PAUSED);
                 DataListener listener = downloadInfo.getListener();
@@ -112,7 +113,7 @@ public class DownloadManager implements DownloadFileListener {
             Log.i(TAG, "---startDownload---");
             TotalDownloadTask task = new TotalDownloadTask(downloadInfo, engine, this);
             downloadingCaches.add(downloadInfo);
-            cacheDownloadTask.put(downloadInfo.getId(), task);
+            cacheDownloadTask.put(downloadInfo.getId().intValue(), task);
             downloadInfo.setStatus(DownloadInfo.READY);
             DataListener listener = downloadInfo.getListener();
             if (listener != null) {
@@ -226,7 +227,7 @@ public class DownloadManager implements DownloadFileListener {
                     listener.onRefresh();
                 }
                 downloadingCaches.remove(info);
-                cacheDownloadTask.remove(info.getId());
+                cacheDownloadTask.remove(info.getId().intValue());
                 startWaitingTask();
                 DBManager.getInstance().updateInfo(info);
             }

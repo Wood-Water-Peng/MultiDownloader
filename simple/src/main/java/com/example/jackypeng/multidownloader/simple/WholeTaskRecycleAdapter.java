@@ -47,7 +47,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
     WholeTaskRecycleAdapter(List<MyBusinessInfo> myBusinessInfos, Context mContext) {
         this.myBusinessInfos = myBusinessInfos;
         this.mContext = mContext;
-        mContext.startService(new Intent(mContext, DownloadService.class));
+//        mContext.startService(new Intent(mContext, DownloadService.class));
         mContext.bindService(new Intent(mContext, DownloadService.class), new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
