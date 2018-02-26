@@ -23,6 +23,7 @@ import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.listeners.DataListener;
 import com.example.multi_downloader.services.DownloadService;
 import com.example.multi_downloader.utils.FileUtil;
+import com.example.multi_downloader.utils.ToastUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -113,7 +114,6 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
          */
         void initData(final MyBusinessInfo businessInfo) {
             this.downloadInfo = DownloadService.getDownloadManager().getDownloadInfoById(businessInfo.getUrl().hashCode());
-
             /**
              * 此时，立刻监听下载的记录
              */
@@ -176,7 +176,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                             downloadService.pause(downloadInfo);
                             break;
                         case DownloadInfo.READY:
-                            downloadService.pause(downloadInfo);
+                            //正在准备下载，不响应用户点击
+                            ToastUtil.toast("正在准备下载，请稍后点击");
                             break;
                         case DownloadInfo.PAUSED:
                         case DownloadInfo.ERROR:

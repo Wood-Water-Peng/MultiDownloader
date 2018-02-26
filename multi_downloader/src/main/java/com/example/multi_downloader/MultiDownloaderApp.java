@@ -29,7 +29,7 @@ public class MultiDownloaderApp extends Application {
     }
 
     private void initDB() {
-// 下面代码仅仅需要执行一次，一般会放在application
+    // 下面代码仅仅需要执行一次，一般会放在application
 
     }
 }

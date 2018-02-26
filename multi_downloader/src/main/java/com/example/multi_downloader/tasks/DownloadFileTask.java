@@ -27,12 +27,8 @@ public class DownloadFileTask implements Runnable {
         this.listener = listener;
     }
 
-    public void pauseTask() {
-        isPause = true;
-    }
-
     @Override
-    public void run(){
+    public void run() {
         long lastLoadedSize = downloadInfo.getLoadedSize();
         HttpURLConnection httpConnection = null;
         try {
@@ -59,7 +55,7 @@ public class DownloadFileTask implements Runnable {
                 long offset = lastLoadedSize;
                 long lastUpdateSize = 0L;
                 downloadInfo.setStatus(DownloadInfo.LOADING);
-                while ((len = (is.read(buf, 0, buf.length))) != -1 && (!isPause)) {
+                while ((len = (is.read(buf, 0, buf.length))) != -1 && (downloadInfo.getStatus() != DownloadInfo.PAUSED)) {
                     raf.write(buf, 0, len);
                     offset += len;
                     //更新下载进度
@@ -71,7 +67,7 @@ public class DownloadFileTask implements Runnable {
                 }
                 //通知监听者下载状态
                 //跟新下载记录到数据库中
-                if (isPause) {  //暂停
+                if (downloadInfo.getStatus() == DownloadInfo.PAUSED) {  //暂停
                     listener.onLoadPaused(downloadInfo);
                 } else {
                     listener.onLoadFinished(downloadInfo);

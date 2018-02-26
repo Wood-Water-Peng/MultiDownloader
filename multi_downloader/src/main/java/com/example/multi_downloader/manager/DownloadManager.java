@@ -26,13 +26,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 public class DownloadManager implements DownloadFileListener {
+
     private static final String TAG = "DownloadManager";
     private static DownloadManager instance;
     private DownloadEngine engine;
     private DownloadConfig config;
     private final List<DownloadInfo> downloadingCaches;    //任务---正在下载
     private final List<DownloadInfo> waitingCaches;    //任务---等待中
-    private final SparseArray<TotalDownloadTask> cacheDownloadTask = new SparseArray<>();//key--DownloadInfo的Id
+//    private final SparseArray<TotalDownloadTask> cacheDownloadTask = new SparseArray<>();//key--DownloadInfo的Id
 
     private DownloadManager(DownloadConfig config) {
         engine = new DownloadEngine(config);
@@ -72,21 +73,21 @@ public class DownloadManager implements DownloadFileListener {
                 }
             }
         } else {
-            TotalDownloadTask task = cacheDownloadTask.get(downloadInfo.getId().intValue());
-            if (task != null) {
-                task.pause();
-                downloadingCaches.remove(downloadInfo);
-                cacheDownloadTask.remove(downloadInfo.getId().intValue());
-                //通知界面刷新
-                downloadInfo.setStatus(DownloadInfo.PAUSED);
-                DataListener listener = downloadInfo.getListener();
-                if (listener != null) {
-                    listener.onRefresh();
-                }
+//            TotalDownloadTask task = cacheDownloadTask.get(downloadInfo.getId().intValue());
+//            if (task != null) {
+//                task.pause();
+            downloadInfo.setStatus(DownloadInfo.PAUSED);
+            DBManager.getInstance().updateInfo(downloadInfo);
+            downloadingCaches.remove(downloadInfo);
+//                cacheDownloadTask.remove(downloadInfo.getId().intValue());
+            //通知界面刷新
+            DataListener listener = downloadInfo.getListener();
+            if (listener != null) {
+                listener.onRefresh();
             }
+//            }
             startWaitingTask();
         }
-        DBManager.getInstance().updateInfo(downloadInfo);
     }
 
     //恢复下载
@@ -113,7 +114,7 @@ public class DownloadManager implements DownloadFileListener {
             Log.i(TAG, "---startDownload---");
             TotalDownloadTask task = new TotalDownloadTask(downloadInfo, engine, this);
             downloadingCaches.add(downloadInfo);
-            cacheDownloadTask.put(downloadInfo.getId().intValue(), task);
+//            cacheDownloadTask.put(downloadInfo.getId().intValue(), task);
             downloadInfo.setStatus(DownloadInfo.READY);
             DataListener listener = downloadInfo.getListener();
             if (listener != null) {
@@ -216,7 +217,7 @@ public class DownloadManager implements DownloadFileListener {
         UIUtil.runOnUIThread(new Runnable() {
             @Override
             public void run() {
-                NotiUtil.showNotification(info.getId().intValue(),info.getIcon(),info.getName(),info.getPath());
+                NotiUtil.showNotification(info.getId().intValue(), info.getIcon(), info.getName(), info.getPath());
                 //通知栏显示
                 EventBus.getDefault().post(new TaskFinishedEvent(info));
                 //更新界面
@@ -227,7 +228,7 @@ public class DownloadManager implements DownloadFileListener {
                     listener.onRefresh();
                 }
                 downloadingCaches.remove(info);
-                cacheDownloadTask.remove(info.getId().intValue());
+//                cacheDownloadTask.remove(info.getId().intValue());
                 startWaitingTask();
                 DBManager.getInstance().updateInfo(info);
             }

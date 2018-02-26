@@ -65,12 +65,6 @@ public class TotalDownloadTask extends AsyncTask<DownloadInfo,Integer,DownloadIn
         execute(downloadInfo);
     }
 
-    public void pause() {
-        if (downloadFileTask != null) {
-            downloadFileTask.pauseTask();
-        }
-    }
-
     private void downloadFile(DownloadInfo downloadInfo) {
         downloadFileTask = new DownloadFileTask(downloadInfo, downloadFileListener);
         engine.submit(downloadFileTask);
