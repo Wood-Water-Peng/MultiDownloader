@@ -1,5 +1,7 @@
 # MultiDownloader
 
+<img width="250" height="400" src="images/image_01.jpeg" alt=""/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img width="250" height="400" src="images/image_02.jpeg"/>
+
 ### 为什么要做这个项目
 
 <img width="250" height="400" src="images/image_01.jpeg" alt=""/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img width="250" height="400" src="images/image_02.jpeg"/>
@@ -11,6 +13,12 @@
 很简单的一个小项目，分为`全部任务`和`下载完成`两个模块，一单任务下载完成，通知栏进行通知。
 
 ### 简单分析
+
+**功能简述**
+
+1. 可设置同时最大下载线程数量
+2. 下载完某一任务后，自动取出等待池中的任务继续下载
+3. 可随时暂停下载，自动保存下载记录
 
 **下载的实现**
 
