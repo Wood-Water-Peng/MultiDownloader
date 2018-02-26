@@ -4,8 +4,6 @@
 
 ### 为什么要做这个项目
 
-<img width="250" height="400" src="images/image_01.jpeg" alt=""/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img width="250" height="400" src="images/image_02.jpeg"/>
-
 最近一直在听喜马拉雅(绝对不是广告)，经常离线下载音频节目，觉得这一块以前并没有认真的做过，算是一块短板，遂起了这个念头。
 
 思路：
