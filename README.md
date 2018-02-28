@@ -20,14 +20,23 @@
 
 **下载的实现**
 
-为了记录每一个文件的下载状态，所以必须要用Sqlite保存下载的状态，如文件的总大小、已下载大小、下载状态(完成？暂停？)等等信息。在下载过程中，有两个异常需要考虑：
+下载类DownloadManager为DownloadService的静态类，所以他的生命周期和DownloadService相同，当DownloadService被销毁时，我们手动地清理DownloadManager。
+
+DownloadService提供下载接口，DownloadManager具体实现。
+
+为了记录每一个文件的下载状态，所以必须要用Sqlite保存下载的状态，如文件的总大小、已下载大小等等信息。在下载过程中，有两个异常需要考虑：
 
 1. 网络中断
 2. 进程被杀死
 
-下载类DownloadManager为DownloadService的静态类，所以他的生命周期和DownloadService相同，当DownloadService被销毁时，我们手动地清理DownloadManager。
+> 问题1：如果下载过程中，网络中断了怎么办？
 
-DownloadService提供下载接口，DownloadManager具体实现。
+	答：网络中断异常可以被捕获到，一旦出现该异常，则立刻将下载状态变为暂停，保存下载数据到sql中。
+
+> 问题2：如果下载过程中，进程被强行杀死怎么办？
+
+	答：下载任务放在Service中执行，如果用户通过返回键回到桌面，那么Activity被销毁，但是Service仍然在运行，执行下载任务。如果用户在任务列表中强行杀死进程，那么Service也会立刻被回收，且onDestroy()方法不会执行，所以在下载过程中我们就要边下载，边保存数据要sql。也就是说，下载了多少字节，我们便如实的记录到sql，等再次进入app时，我们读出下载记录，然后再更新界面。
+
 
 **RecyclerView中的复用问题**
 

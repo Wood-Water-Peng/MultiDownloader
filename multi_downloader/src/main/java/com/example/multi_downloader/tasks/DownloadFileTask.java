@@ -51,10 +51,11 @@ public class DownloadFileTask implements Runnable {
                 Log.i(TAG, "download_url:" + downloadInfo.getUrl());
                 raf.seek(lastLoadedSize);
                 final byte[] buf = new byte[1024 * 1024 * 10];
-                int len = -1;
+                int len;
                 long offset = lastLoadedSize;
                 long lastUpdateSize = 0L;
                 downloadInfo.setStatus(DownloadInfo.LOADING);
+                DBManager.getInstance().updateInfo(downloadInfo);
                 while ((len = (is.read(buf, 0, buf.length))) != -1 && (downloadInfo.getStatus() != DownloadInfo.PAUSED)) {
                     raf.write(buf, 0, len);
                     offset += len;
@@ -64,9 +65,10 @@ public class DownloadFileTask implements Runnable {
                         lastUpdateSize = offset;
                         listener.onLoading(downloadInfo);
                     }
+                    DBManager.getInstance().updateInfo(downloadInfo);
                 }
                 //通知监听者下载状态
-                //跟新下载记录到数据库中
+                //更新下载记录到数据库中
                 if (downloadInfo.getStatus() == DownloadInfo.PAUSED) {  //暂停
                     listener.onLoadPaused(downloadInfo);
                 } else {
@@ -75,6 +77,7 @@ public class DownloadFileTask implements Runnable {
                 DBManager.getInstance().updateInfo(downloadInfo);
             }
         } catch (Exception e) {
+            Log.i(TAG, "下载文件异常:" + e.getMessage());
             listener.onLoadFailed(downloadInfo);
             DBManager.getInstance().updateInfo(downloadInfo);
         } finally {

@@ -13,6 +13,7 @@ public interface DownloadFileListener {
     public static final int PAUSED = 3;
     public static final int FINISHED = 4;
 
+    void onFetchFileInfoFailed(DownloadInfo info);
     void onLoading(DownloadInfo info);
     void onLoadFinished(DownloadInfo info);
     void onLoadPaused(DownloadInfo info);

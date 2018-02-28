@@ -62,4 +62,5 @@ public class DownloadService extends Service {
         Log.i(TAG, "---onDestroy---");
         downloadManager.onDestroy();
     }
+
 }

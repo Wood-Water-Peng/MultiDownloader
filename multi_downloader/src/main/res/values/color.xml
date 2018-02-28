@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 黑色 -->
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <!-- 浅灰 -->
+    <color name="light_gray">#c6c6c6</color>
+    <!-- 顶部titleBar背景色-->
+    <color name="title_bar_bg">#f5f6f7</color>
+    <!-- 浅灰背景 -->
+    <color name="gray_bg">#e8e8e8</color>
+    <!-- 深灰字体 -->
+    <color name="dark_gray">#888282</color>
+    <!-- GestureLock 外圆颜色-->
+    <color name="circle_gray">#787878</color>
+    <color name="text_gray">#323232</color>
+    <!-- 红色 -->
+    <color name="red">#ff0000</color>
+
+    <color name="transparent">#00000000</color>
+</resources>

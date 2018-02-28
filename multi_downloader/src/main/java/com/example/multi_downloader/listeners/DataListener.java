@@ -5,6 +5,20 @@ package com.example.multi_downloader.listeners;
  */
 
 public interface DataListener {
-    void onRefresh();
+
+    void onInit();
+
+    void onPrepare();
+
+    void onWaiting();
+
+    void onLoading();
+
+    void onPaused();
+
+    void onSuccess();
+
+    void onFetchFileInfoError();  //获取要下载的文件失败
+
     void onFailed();
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dialog_general_pos_neg_bg">
+
+    <TextView
+        android:id="@+id/dialog_general_positive_negative_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="提示"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+
+    <ImageView
+        android:id="@+id/dialog_general_positive_negative_divider_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/dialog_general_positive_negative_title"
+        android:layout_marginTop="12dp"
+        android:alpha="0.5"
+        android:background="@color/light_gray" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dialog_general_positive_negative_divider_line"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+
+        <Button
+            android:id="@+id/dialog_general_positive_negative_btn_negative"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:padding="2dp"
+            android:text="取消"
+            android:textColor="@color/general_blue"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:alpha="0.5"
+            android:background="@color/light_gray" />
+
+        <Button
+            android:id="@+id/dialog_general_positive_negative_btn_positive"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:padding="2dp"
+            android:text="确定"
+            android:textColor="@color/general_blue"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</RelativeLayout>

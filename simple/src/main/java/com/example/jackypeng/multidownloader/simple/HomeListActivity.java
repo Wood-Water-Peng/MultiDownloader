@@ -3,6 +3,7 @@ package com.example.jackypeng.multidownloader.simple;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 
 import com.example.jackypeng.multidownloader.R;
 import com.flyco.tablayout.SlidingTabLayout;
@@ -21,6 +22,7 @@ public class HomeListActivity extends FragmentActivity {
     ViewPager viewPager;
 
     private Unbinder binder;
+    private static final String TAG = "HomeListActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,5 +43,6 @@ public class HomeListActivity extends FragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         binder.unbind();
+        Log.i(TAG, "---onDestroy---");
     }
 }

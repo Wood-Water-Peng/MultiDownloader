@@ -8,6 +8,8 @@ import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.events.TaskFinishedEvent;
 import com.example.multi_downloader.listeners.DataListener;
 import com.example.multi_downloader.listeners.DownloadFileListener;
+import com.example.multi_downloader.tasks.DownloadFileTask;
+import com.example.multi_downloader.tasks.FetchFileInfoRunnable;
 import com.example.multi_downloader.tasks.TotalDownloadTask;
 import com.example.multi_downloader.utils.NotiUtil;
 import com.example.multi_downloader.utils.UIUtil;
@@ -58,41 +60,37 @@ public class DownloadManager implements DownloadFileListener {
      * 1.缓存池中
      * 2.下载池中
      */
-
     public void pauseDownload(DownloadInfo downloadInfo) {
-
-        if (!downloadingCaches.contains(downloadInfo)) {
-            for (DownloadInfo item : waitingCaches) {
-                if (downloadInfo.getId() == item.getId()) {
-                    item.setStatus(DownloadInfo.NONE);
-                    DataListener listener = downloadInfo.getListener();
-                    if (listener != null) {
-                        listener.onRefresh();
-                    }
-                    waitingCaches.remove(item);
-                }
-            }
-        } else {
-//            TotalDownloadTask task = cacheDownloadTask.get(downloadInfo.getId().intValue());
-//            if (task != null) {
-//                task.pause();
-            downloadInfo.setStatus(DownloadInfo.PAUSED);
-            DBManager.getInstance().updateInfo(downloadInfo);
-            downloadingCaches.remove(downloadInfo);
-//                cacheDownloadTask.remove(downloadInfo.getId().intValue());
-            //通知界面刷新
-            DataListener listener = downloadInfo.getListener();
-            if (listener != null) {
-                listener.onRefresh();
-            }
-//            }
-            startWaitingTask();
+        //通知界面刷新
+        DataListener listener = downloadInfo.getListener();
+        if (listener != null) {
+            listener.onPaused();
         }
+        downloadingCaches.remove(downloadInfo);
+        DBManager.getInstance().updateInfo(downloadInfo);
+        startWaitingTask();
     }
 
     //恢复下载
     public void resumeDownload(DownloadInfo downloadInfo) {
-        startDownload(downloadInfo);
+        if (downloadingCaches.size() >= config.getMaxThreads()) {
+            Log.i(TAG, "---waiting---");
+            DataListener listener = downloadInfo.getListener();
+            if (listener != null) {
+                listener.onWaiting();
+            }
+            waitingCaches.add(downloadInfo);
+        } else {
+            Log.i(TAG, "---resumeDownload---");
+            DownloadFileTask task = new DownloadFileTask(downloadInfo, this);
+            DataListener listener = downloadInfo.getListener();
+            if (listener != null) {
+                listener.onLoading();
+            }
+            engine.submit(task);
+            downloadingCaches.add(downloadInfo);
+            DBManager.getInstance().updateInfo(downloadInfo);
+        }
     }
 
     //删除下载
@@ -104,23 +102,20 @@ public class DownloadManager implements DownloadFileListener {
     public void startDownload(DownloadInfo downloadInfo) {
         if (downloadingCaches.size() >= config.getMaxThreads()) {
             Log.i(TAG, "---waiting---");
-            waitingCaches.add(downloadInfo);
-            downloadInfo.setStatus(DownloadInfo.WAITING);
             DataListener listener = downloadInfo.getListener();
             if (listener != null) {
-                listener.onRefresh();
+                listener.onWaiting();
             }
+            waitingCaches.add(downloadInfo);
         } else {
             Log.i(TAG, "---startDownload---");
             TotalDownloadTask task = new TotalDownloadTask(downloadInfo, engine, this);
-            downloadingCaches.add(downloadInfo);
-//            cacheDownloadTask.put(downloadInfo.getId().intValue(), task);
-            downloadInfo.setStatus(DownloadInfo.READY);
             DataListener listener = downloadInfo.getListener();
             if (listener != null) {
-                listener.onRefresh();
+                listener.onPrepare();
             }
             task.start();
+            downloadingCaches.add(downloadInfo);
             DBManager.getInstance().updateInfo(downloadInfo);
         }
     }
@@ -159,7 +154,7 @@ public class DownloadManager implements DownloadFileListener {
                 //更新界面
                 DataListener listener = item.getListener();
                 if (listener != null) {
-                    listener.onRefresh();
+//                    listener.onRefresh();
                 }
             }
         }
@@ -190,6 +185,7 @@ public class DownloadManager implements DownloadFileListener {
          * 1.关闭等待的任务
          * 2.关闭正在下载的任务
          */
+        Log.i(TAG, "---onDestroy---");
         resetWaitingTasks();
         clearWaitingCaches();
         pauseAllDownloadTasks();
@@ -197,15 +193,31 @@ public class DownloadManager implements DownloadFileListener {
     }
 
     @Override
+    public void onFetchFileInfoFailed(final DownloadInfo info) {
+        downloadingCaches.remove(info);
+        startWaitingTask();
+        DBManager.getInstance().updateInfo(info);
+        UIUtil.runOnUIThread(new Runnable() {
+            @Override
+            public void run() {
+                //更新界面
+                DataListener listener = info.getListener();
+                if (listener != null) {
+                    listener.onFetchFileInfoError();
+                }
+            }
+        });
+    }
+
+    @Override
     public void onLoading(final DownloadInfo info) {
         UIUtil.runOnUIThread(new Runnable() {
             @Override
             public void run() {
-                info.setStatus(DownloadInfo.LOADING);
                 //更新界面
                 DataListener listener = info.getListener();
                 if (listener != null) {
-                    listener.onRefresh();
+                    listener.onLoading();
                 }
             }
         });
@@ -213,39 +225,36 @@ public class DownloadManager implements DownloadFileListener {
 
     @Override
     public void onLoadFinished(final DownloadInfo info) {
+        Log.i(TAG, "---onLoadFinished---");
         //更新界面
         UIUtil.runOnUIThread(new Runnable() {
             @Override
             public void run() {
-                NotiUtil.showNotification(info.getId().intValue(), info.getIcon(), info.getName(), info.getPath());
-                //通知栏显示
-                EventBus.getDefault().post(new TaskFinishedEvent(info));
-                //更新界面
-                info.setStatus(DownloadInfo.FINISHED);
                 //更新界面
                 DataListener listener = info.getListener();
                 if (listener != null) {
-                    listener.onRefresh();
+                    listener.onSuccess();
                 }
+                NotiUtil.showNotification(info.getId().intValue(), info.getIcon(), info.getName(), info.getPath());
+                //通知栏显示
+                EventBus.getDefault().post(new TaskFinishedEvent(info));
                 downloadingCaches.remove(info);
-//                cacheDownloadTask.remove(info.getId().intValue());
-                startWaitingTask();
                 DBManager.getInstance().updateInfo(info);
+                startWaitingTask();
             }
         });
     }
 
     @Override
     public void onLoadPaused(final DownloadInfo info) {
+        Log.i(TAG, "---onLoadPaused---");
         UIUtil.runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 //更新界面
-                info.setStatus(DownloadInfo.PAUSED);
-                //更新界面
                 DataListener listener = info.getListener();
                 if (listener != null) {
-                    listener.onRefresh();
+                    listener.onPaused();
                 }
             }
         });
@@ -257,15 +266,20 @@ public class DownloadManager implements DownloadFileListener {
      * 2.进程被杀死
      */
     @Override
-    public void onLoadFailed(DownloadInfo info) {
+    public void onLoadFailed(final DownloadInfo info) {
+        Log.i(TAG, "---onLoadFailed---");
         //将缓存池中的任务设为初始状态
-        resetWaitingTasks();
+//        resetWaitingTasks();
         //暂停正在下载的任务
-        info.setStatus(DownloadInfo.PAUSED);
         //更新界面
-        DataListener listener = info.getListener();
-        if (listener != null) {
-            listener.onRefresh();
-        }
+        UIUtil.runOnUIThread(new Runnable() {
+            @Override
+            public void run() {
+                DataListener listener = info.getListener();
+                if (listener != null) {
+                    listener.onFailed();
+                }
+            }
+        });
     }
 }
