@@ -1,7 +1,6 @@
 package com.example.multi_downloader.manager;
 
 import android.util.Log;
-import android.util.SparseArray;
 
 import com.example.multi_downloader.DB.DBManager;
 import com.example.multi_downloader.bean.DownloadInfo;
@@ -9,7 +8,6 @@ import com.example.multi_downloader.events.TaskFinishedEvent;
 import com.example.multi_downloader.listeners.DataListener;
 import com.example.multi_downloader.listeners.DownloadFileListener;
 import com.example.multi_downloader.tasks.DownloadFileTask;
-import com.example.multi_downloader.tasks.FetchFileInfoRunnable;
 import com.example.multi_downloader.tasks.TotalDownloadTask;
 import com.example.multi_downloader.utils.NotiUtil;
 import com.example.multi_downloader.utils.UIUtil;
@@ -17,9 +15,7 @@ import com.example.multi_downloader.utils.UIUtil;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by jackypeng on 2017/12/20.
@@ -76,6 +72,7 @@ public class DownloadManager implements DownloadFileListener {
         if (downloadingCaches.size() >= config.getMaxThreads()) {
             Log.i(TAG, "---waiting---");
             DataListener listener = downloadInfo.getListener();
+            downloadInfo.setPreStatus(downloadInfo.getStatus());
             if (listener != null) {
                 listener.onWaiting();
             }
@@ -100,8 +97,11 @@ public class DownloadManager implements DownloadFileListener {
 
     //开启新的下载任务
     public void startDownload(DownloadInfo downloadInfo) {
+        Log.i(TAG, "当前正在下载任务: " + downloadingCaches.size());
+        Log.i(TAG, "当前正在缓存任务: " + waitingCaches.size());
         if (downloadingCaches.size() >= config.getMaxThreads()) {
             Log.i(TAG, "---waiting---");
+            downloadInfo.setPreStatus(downloadInfo.getStatus());
             DataListener listener = downloadInfo.getListener();
             if (listener != null) {
                 listener.onWaiting();
@@ -117,6 +117,22 @@ public class DownloadManager implements DownloadFileListener {
             task.start();
             downloadingCaches.add(downloadInfo);
             DBManager.getInstance().updateInfo(downloadInfo);
+        }
+    }
+
+    //将任务从缓存池中移除
+    public void removeTaskFromWaitingPool(DownloadInfo downloadInfo) {
+        if (downloadInfo == null) return;
+        waitingCaches.remove(downloadInfo);
+        DataListener listener = downloadInfo.getListener();
+        if (listener != null) {
+            int preStatus = downloadInfo.getPreStatus();
+            Log.i(TAG,"上一个状态是: "+preStatus);
+            if (preStatus == DownloadInfo.NONE) {
+                listener.onInit();
+            } else if (preStatus == DownloadInfo.PAUSED) {
+                listener.onPaused();
+            }
         }
     }
 
@@ -235,11 +251,7 @@ public class DownloadManager implements DownloadFileListener {
                 if (listener != null) {
                     listener.onSuccess();
                 }
-                NotiUtil.showNotification(info.getId().intValue(), info.getIcon(), info.getName(), info.getPath());
-                //通知栏显示
-                EventBus.getDefault().post(new TaskFinishedEvent(info));
                 downloadingCaches.remove(info);
-                DBManager.getInstance().updateInfo(info);
                 startWaitingTask();
             }
         });
@@ -282,4 +294,5 @@ public class DownloadManager implements DownloadFileListener {
             }
         });
     }
+
 }

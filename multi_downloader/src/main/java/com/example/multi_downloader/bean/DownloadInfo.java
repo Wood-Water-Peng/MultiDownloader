@@ -25,22 +25,24 @@ public class DownloadInfo {
     private Long key;
     @Unique
     private Long id;
-    private int status;
+    private int status;       //当前状态
     private String url;
     private String icon;
     private String name;
     private String path;
     private long loadedSize;
     private long totalSize;
+
     @Transient
     private DataListener listener;
+    @Transient
+    private int preStatus;    //上一个状态
 
     public DownloadInfo() {
     }
 
     @Generated(hash = 595438495)
-    public DownloadInfo(Long key, Long id, int status, String url, String icon,
-            String name, String path, long loadedSize, long totalSize) {
+    public DownloadInfo(Long key, Long id, int status, String url, String icon, String name, String path, long loadedSize, long totalSize) {
         this.key = key;
         this.id = id;
         this.status = status;
@@ -130,5 +132,13 @@ public class DownloadInfo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getPreStatus() {
+        return preStatus;
+    }
+
+    public void setPreStatus(int preStatus) {
+        this.preStatus = preStatus;
     }
 }

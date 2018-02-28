@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.example.jackypeng.multidownloader.R;
 import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.utils.FileUtil;
+import com.example.multi_downloader.utils.PackageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +46,19 @@ public class FinishedTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerVie
         if (!(holder instanceof FinishedTaskRecycleAdapter.ItemHolder)) {
             return;
         }
-        DownloadInfo downloadInfo = downloadInfos.get(position);
+        final DownloadInfo downloadInfo = downloadInfos.get(position);
         ItemHolder itemHolder = (ItemHolder) holder;
         itemHolder.tv_name.setText(downloadInfo.getName());
         itemHolder.tv_size.setText(FileUtil.formatFileSize(downloadInfo.getTotalSize()));
         Glide.with(mContext).load(downloadInfo.getIcon()).into(itemHolder.iv_icon);
+
+        itemHolder.bt_action.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //安装apk
+                PackageUtil.installApk(mContext, downloadInfo.getPath());
+            }
+        });
     }
 
     @Override

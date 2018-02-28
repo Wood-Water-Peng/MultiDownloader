@@ -35,8 +35,27 @@ public class GeneralPositiveAndNegativeDialog extends Dialog {
         mTitleView.setText(title);
     }
 
-    public void setPositiveAndNegativeListener(View.OnClickListener listener) {
+    public void setPositiveAndNegativeListener(OnPositiveAndNegativeListener listener) {
         contentView.findViewById(R.id.dialog_general_positive_negative_btn_negative).setOnClickListener(listener);
         contentView.findViewById(R.id.dialog_general_positive_negative_btn_positive).setOnClickListener(listener);
     }
+
+    public abstract static class OnPositiveAndNegativeListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            int i = v.getId();
+            if (i == R.id.dialog_general_positive_negative_btn_negative) {
+                onNegativeButtonClicked();
+
+            } else if (i == R.id.dialog_general_positive_negative_btn_positive) {
+                onPositiveButtonClicked();
+            }
+        }
+
+        public abstract void onPositiveButtonClicked();
+
+        public abstract void onNegativeButtonClicked();
+    }
+
 }

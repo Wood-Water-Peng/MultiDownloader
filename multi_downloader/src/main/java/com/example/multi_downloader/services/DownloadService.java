@@ -48,6 +48,9 @@ public class DownloadService extends Service {
         downloadManager.startDownload(downloadInfo);
     }
 
+    public void removeTaskFromWaitingPool(DownloadInfo downloadInfo){
+        downloadManager.removeTaskFromWaitingPool(downloadInfo);
+    }
     public void pause(DownloadInfo downloadInfo) {
         downloadManager.pauseDownload(downloadInfo);
     }

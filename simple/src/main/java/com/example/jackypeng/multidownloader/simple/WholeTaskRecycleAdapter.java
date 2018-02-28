@@ -15,20 +15,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.jackypeng.multidownloader.R;
 import com.example.jackypeng.multidownloader.bean.MyBusinessInfo;
+import com.example.multi_downloader.DB.DBManager;
 import com.example.multi_downloader.MultiDownloaderApp;
 import com.example.multi_downloader.bean.DownloadInfo;
+import com.example.multi_downloader.events.TaskFinishedEvent;
 import com.example.multi_downloader.listeners.DataListener;
 import com.example.multi_downloader.services.DownloadService;
-import com.example.multi_downloader.utils.DeviceInfo;
 import com.example.multi_downloader.utils.FileUtil;
 import com.example.multi_downloader.utils.GeneralPositiveAndNegativeDialog;
 import com.example.multi_downloader.utils.NetUtil;
+import com.example.multi_downloader.utils.NotiUtil;
 import com.example.multi_downloader.utils.ToastUtil;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,6 +52,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
      * 这样即使旧的Adapter被回收掉，Service可以确保下载继续执行，并提供数据
      */
     private List<MyBusinessInfo> myBusinessInfos = new ArrayList<>();
+    private List<DownloadInfo> downloadInfos = new ArrayList<>();
     private Context mContext;
     private DownloadService downloadService;
 
@@ -112,6 +118,20 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
             bt_action = (Button) view.findViewById(R.id.bt_action);
         }
 
+        public void setVisibility(boolean isVisible) {
+            RecyclerView.LayoutParams param = (RecyclerView.LayoutParams) itemView.getLayoutParams();
+            if (isVisible) {
+                param.height = RelativeLayout.LayoutParams.WRAP_CONTENT;// 这里注意使用自己布局的根布局类型
+                param.width = RelativeLayout.LayoutParams.MATCH_PARENT;// 这里注意使用自己布局的根布局类型
+                itemView.setVisibility(View.VISIBLE);
+            } else {
+                itemView.setVisibility(View.GONE);
+                param.height = 0;
+                param.width = 0;
+            }
+            itemView.setLayoutParams(param);
+        }
+
         /**
          * 界面需要通过数据来更新
          * 1.数据的来源   ---由DownloadManager统一管理
@@ -147,6 +167,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                 @Override
                 public void onInit() {
+                    downloadInfo.setStatus(DownloadInfo.NONE);
                     bt_action.setText("下载");
                     tv_status.setText("未下载");
                     bt_action.setBackgroundColor(Color.LTGRAY);
@@ -197,6 +218,9 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                 @Override
                 public void onSuccess() {
+                    NotiUtil.showNotification(downloadInfo.getId().intValue(), downloadInfo.getIcon(), downloadInfo.getName(), downloadInfo.getPath());
+                    //通知栏显示
+                    EventBus.getDefault().post(new TaskFinishedEvent(downloadInfo));
                     downloadInfo.setStatus(DownloadInfo.FINISHED);
                     bt_action.setText("删除");
                     tv_status.setText("下载成功");
@@ -205,6 +229,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                     pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                     tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                             .formatFileSize(downloadInfo.getTotalSize()));
+                    DBManager.getInstance().updateInfo(downloadInfo);
+                    setVisibility(false);
                 }
 
                 @Override
@@ -246,9 +272,21 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                     if (ConnectivityManager.TYPE_WIFI != NetUtil.getConnectedType()) {
                         //连接非wifi信号，弹出dialog提示
-                        GeneralPositiveAndNegativeDialog dialog = new GeneralPositiveAndNegativeDialog(mContext);
+                        final GeneralPositiveAndNegativeDialog dialog = new GeneralPositiveAndNegativeDialog(mContext);
                         dialog.setTitle("网络未连接");
                         dialog.show();
+                        dialog.setPositiveAndNegativeListener(new GeneralPositiveAndNegativeDialog.OnPositiveAndNegativeListener() {
+
+                            @Override
+                            public void onPositiveButtonClicked() {
+                                dialog.dismiss();
+                            }
+
+                            @Override
+                            public void onNegativeButtonClicked() {
+                                dialog.dismiss();
+                            }
+                        });
                         return;
                     }
                     /**
@@ -260,7 +298,9 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                             downloadService.download(downloadInfo);
                             break;
                         case DownloadInfo.WAITING:
-                            downloadService.pause(downloadInfo);
+//                            将任务从等待队列中移除，并还原到以前的状态
+//                            downloadService.pause(downloadInfo);
+                            downloadService.removeTaskFromWaitingPool(downloadInfo);
                             break;
                         case DownloadInfo.READY:
                             //正在准备下载，不响应用户点击
@@ -302,6 +342,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                 tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                         .formatFileSize(downloadInfo.getTotalSize()));
             } else if (loadedSize == totalSize) {   //下载完成
+                setVisibility(false);
                 downloadInfo.setStatus(DownloadInfo.FINISHED);
                 bt_action.setText("删除");
                 tv_status.setText("下载成功");
