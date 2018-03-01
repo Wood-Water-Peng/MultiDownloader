@@ -18,4 +18,12 @@
     <color name="red">#ff0000</color>
 
     <color name="transparent">#00000000</color>
+
+    //统一的红色
+    <color name="general_red">#F36E81</color>
+
+    //统一的蓝色
+    <color name="general_blue">#007de3</color>
+
+    <color name="general_green">#66cc99</color>
 </resources>

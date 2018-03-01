@@ -39,11 +39,11 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <Button
+            <com.example.multi_downloader.views.DownloadButton
                 android:id="@+id/finished_item_bt_action"
                 android:layout_width="64dp"
                 android:layout_height="38dp"
-                android:text="安装" />
+                android:gravity="center" />
 
             <TextView
                 android:id="@+id/finished_item_tv_size"

@@ -32,6 +32,7 @@ import com.example.multi_downloader.utils.GeneralPositiveAndNegativeDialog;
 import com.example.multi_downloader.utils.NetUtil;
 import com.example.multi_downloader.utils.NotiUtil;
 import com.example.multi_downloader.utils.ToastUtil;
+import com.example.multi_downloader.views.DownloadButton;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -87,8 +88,6 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         MyBusinessInfo businessInfo = myBusinessInfos.get(position);
         ItemHolder itemHolder = (ItemHolder) holder;
-        ((ItemHolder) holder).tv_name.setText(businessInfo.getName());
-        Glide.with(mContext).load(businessInfo.getIcon()).into(itemHolder.iv_icon);
         //根据downloadInfo,确定各个控件的状态
         itemHolder.initData(businessInfo);
     }
@@ -105,7 +104,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
         private final TextView tv_status;
         private final ProgressBar pb;
         private final TextView tv_name;
-        private final Button bt_action;
+        private final DownloadButton bt_action;
         private DownloadInfo downloadInfo;
 
         ItemHolder(View view) {
@@ -115,7 +114,7 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
             tv_status = (TextView) view.findViewById(R.id.tv_status);
             pb = (ProgressBar) view.findViewById(R.id.pb);
             tv_name = (TextView) view.findViewById(R.id.tv_name);
-            bt_action = (Button) view.findViewById(R.id.bt_action);
+            bt_action = (DownloadButton) view.findViewById(R.id.bt_action);
         }
 
         public void setVisibility(boolean isVisible) {
@@ -168,37 +167,29 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                 @Override
                 public void onInit() {
                     downloadInfo.setStatus(DownloadInfo.NONE);
-                    bt_action.setText("下载");
                     tv_status.setText("未下载");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.INIT);
                 }
 
                 @Override
                 public void onPrepare() {
                     downloadInfo.setStatus(DownloadInfo.READY);
-                    bt_action.setText("准备中...");
                     tv_status.setText("准备下载中...");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.PREPARING_DOWNLOAD);
                 }
 
                 @Override
                 public void onWaiting() {
                     downloadInfo.setStatus(DownloadInfo.WAITING);
-                    bt_action.setText("等待中...");
                     tv_status.setText("等待下载中...");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.WAITING);
                 }
 
                 @Override
                 public void onLoading() {
                     downloadInfo.setStatus(DownloadInfo.LOADING);
-                    bt_action.setText("暂停");
                     tv_status.setText("下载中");
-                    bt_action.setBackgroundColor(Color.BLUE);
-                    tv_status.setTextColor(Color.BLUE);
+                    bt_action.setStatus(DownloadButton.DOWNLOADING);
                     pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                     tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                             .formatFileSize(downloadInfo.getTotalSize()));
@@ -207,10 +198,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                 @Override
                 public void onPaused() {
                     downloadInfo.setStatus(DownloadInfo.PAUSED);
-                    bt_action.setText("继续");
                     tv_status.setText("暂停中");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.PAUSED);
                     pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                     tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                             .formatFileSize(downloadInfo.getTotalSize()));
@@ -222,10 +211,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                     //通知栏显示
                     EventBus.getDefault().post(new TaskFinishedEvent(downloadInfo));
                     downloadInfo.setStatus(DownloadInfo.FINISHED);
-                    bt_action.setText("删除");
                     tv_status.setText("下载成功");
-                    bt_action.setBackgroundColor(Color.RED);
-                    tv_status.setTextColor(Color.RED);
+                    bt_action.setStatus(DownloadButton.FINISHED);
                     pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                     tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                             .formatFileSize(downloadInfo.getTotalSize()));
@@ -236,10 +223,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                 @Override
                 public void onFetchFileInfoError() {
                     downloadInfo.setStatus(DownloadInfo.NONE);
-                    bt_action.setText("下载");
                     tv_status.setText("未下载");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.INIT);
                     ToastUtil.toast("获取文件信息失败");
                 }
 
@@ -247,10 +232,8 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
                 public void onFailed() {
                     Log.i(TAG, downloadInfo.getName() + "  failed");
                     downloadInfo.setStatus(DownloadInfo.PAUSED);
-                    bt_action.setText("继续");
                     tv_status.setText("暂停中");
-                    bt_action.setBackgroundColor(Color.LTGRAY);
-                    tv_status.setTextColor(Color.LTGRAY);
+                    bt_action.setStatus(DownloadButton.PAUSED);
                     pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                     tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                             .formatFileSize(downloadInfo.getTotalSize()));
@@ -324,30 +307,26 @@ public class WholeTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.V
          * 根据数据库中的数据，初始化，并给每一个downloadInfo赋予一个状态
          */
         private void initUI(DownloadInfo downloadInfo, long loadedSize, long totalSize) {
+            Glide.with(mContext).load(downloadInfo.getIcon()).into(iv_icon);
+            tv_name.setText(downloadInfo.getName());
             if (loadedSize == 0) {//未下载
                 downloadInfo.setStatus(DownloadInfo.NONE);
                 tv_size.setText("");
                 pb.setProgress(0);
-                bt_action.setText("下载");
+                bt_action.setStatus(DownloadButton.INIT);
                 tv_status.setText("未下载");
-                bt_action.setBackgroundColor(Color.LTGRAY);
-                tv_status.setTextColor(Color.LTGRAY);
             } else if (loadedSize > 0 && loadedSize < totalSize) {   //暂停中
                 downloadInfo.setStatus(DownloadInfo.PAUSED);
-                bt_action.setText("继续");
                 tv_status.setText("暂停中");
-                bt_action.setBackgroundColor(Color.LTGRAY);
-                tv_status.setTextColor(Color.LTGRAY);
+                bt_action.setStatus(DownloadButton.PAUSED);
                 pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                 tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                         .formatFileSize(downloadInfo.getTotalSize()));
             } else if (loadedSize == totalSize) {   //下载完成
                 setVisibility(false);
                 downloadInfo.setStatus(DownloadInfo.FINISHED);
-                bt_action.setText("删除");
                 tv_status.setText("下载成功");
-                bt_action.setBackgroundColor(Color.RED);
-                tv_status.setTextColor(Color.RED);
+                bt_action.setStatus(DownloadButton.FINISHED);
                 pb.setProgress((int) (downloadInfo.getLoadedSize() * 100.0 / downloadInfo.getTotalSize()));
                 tv_size.setText(FileUtil.formatFileSize(downloadInfo.getLoadedSize()) + "/" + FileUtil
                         .formatFileSize(downloadInfo.getTotalSize()));

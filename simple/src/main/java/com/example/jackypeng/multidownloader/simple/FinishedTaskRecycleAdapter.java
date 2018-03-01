@@ -14,6 +14,7 @@ import com.example.jackypeng.multidownloader.R;
 import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.utils.FileUtil;
 import com.example.multi_downloader.utils.PackageUtil;
+import com.example.multi_downloader.views.DownloadButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
 public class FinishedTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context mContext;
+    //传进来的数据已经是FINISH状态
     private List<DownloadInfo> downloadInfos = new ArrayList<>();
 
     public FinishedTaskRecycleAdapter(Context context) {
@@ -48,17 +50,7 @@ public class FinishedTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerVie
         }
         final DownloadInfo downloadInfo = downloadInfos.get(position);
         ItemHolder itemHolder = (ItemHolder) holder;
-        itemHolder.tv_name.setText(downloadInfo.getName());
-        itemHolder.tv_size.setText(FileUtil.formatFileSize(downloadInfo.getTotalSize()));
-        Glide.with(mContext).load(downloadInfo.getIcon()).into(itemHolder.iv_icon);
-
-        itemHolder.bt_action.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //安装apk
-                PackageUtil.installApk(mContext, downloadInfo.getPath());
-            }
-        });
+        itemHolder.initUI(downloadInfo);
     }
 
     @Override
@@ -71,14 +63,29 @@ public class FinishedTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerVie
         private final ImageView iv_icon;
         private final TextView tv_size;
         private final TextView tv_name;
-        private final Button bt_action;
+        private final DownloadButton bt_action;
 
         ItemHolder(View view) {
             super(view);
             iv_icon = (ImageView) view.findViewById(R.id.finished_item_iv_icon);
             tv_size = (TextView) view.findViewById(R.id.finished_item_tv_size);
             tv_name = (TextView) view.findViewById(R.id.finished_item_tv_name);
-            bt_action = (Button) view.findViewById(R.id.finished_item_bt_action);
+            bt_action = (DownloadButton) view.findViewById(R.id.finished_item_bt_action);
+        }
+
+
+        void initUI(final DownloadInfo downloadInfo) {
+            tv_name.setText(downloadInfo.getName());
+            tv_size.setText(FileUtil.formatFileSize(downloadInfo.getTotalSize()));
+            bt_action.setStatus(DownloadButton.FINISHED);
+            Glide.with(mContext).load(downloadInfo.getIcon()).into(iv_icon);
+            bt_action.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //安装apk
+                    PackageUtil.installApk(mContext, downloadInfo.getPath());
+                }
+            });
         }
     }
 }

@@ -8,9 +8,8 @@
 
     <ImageView
         android:id="@+id/iv_icon"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        />
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -24,20 +23,21 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dp">
 
             <TextView
                 android:id="@+id/tv_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                tools:text="微信" />
+                android:layout_weight="1" />
 
-            <Button
+            <com.example.multi_downloader.views.DownloadButton
                 android:id="@+id/bt_action"
-                android:layout_width="64dp"
-                android:layout_height="38dp"
-                android:text="下载" />
+                android:layout_width="70dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -59,7 +59,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="right"
-                tools:text="没有下载" />
+                android:textColor="@color/light_gray"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <ProgressBar

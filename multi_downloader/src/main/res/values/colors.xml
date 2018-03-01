@@ -4,6 +4,4 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    //统一的蓝色
-    <color name="general_blue">#007de3</color>
 </resources>
