@@ -11,6 +11,8 @@ import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.manager.DownloadConfig;
 import com.example.multi_downloader.manager.DownloadManager;
 
+import java.security.PublicKey;
+
 /**
  * Created by jackypeng on 2017/12/22.
  */
@@ -18,7 +20,7 @@ import com.example.multi_downloader.manager.DownloadManager;
 public class DownloadService extends Service {
     private static final String TAG = "DownloadService";
     private LocalBinder binder = new LocalBinder();
-    private static DownloadManager downloadManager;
+    private DownloadManager downloadManager;
 
     public class LocalBinder extends Binder {
         // 声明一个方法，getService。（提供给客户端调用）
@@ -31,26 +33,29 @@ public class DownloadService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(TAG, "---onCreate---");
         downloadManager = DownloadManager.getInstance(new DownloadConfig());
-    }
-
-    public static DownloadManager getDownloadManager() {
-        return DownloadManager.getInstance(new DownloadConfig());
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(TAG, "---onBinder---");
         return binder;
+    }
+
+    public DownloadManager getDownloadManager() {
+        return downloadManager;
     }
 
     public void download(DownloadInfo downloadInfo) {
         downloadManager.startDownload(downloadInfo);
     }
 
-    public void removeTaskFromWaitingPool(DownloadInfo downloadInfo){
+    public void removeTaskFromWaitingPool(DownloadInfo downloadInfo) {
         downloadManager.removeTaskFromWaitingPool(downloadInfo);
     }
+
     public void pause(DownloadInfo downloadInfo) {
         downloadManager.pauseDownload(downloadInfo);
     }

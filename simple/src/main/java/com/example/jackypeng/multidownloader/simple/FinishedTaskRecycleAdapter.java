@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.jackypeng.multidownloader.R;
 import com.example.multi_downloader.bean.DownloadInfo;
+import com.example.multi_downloader.constants.DownloadStatusConstants;
 import com.example.multi_downloader.utils.FileUtil;
 import com.example.multi_downloader.utils.PackageUtil;
 import com.example.multi_downloader.views.DownloadButton;
@@ -77,7 +78,7 @@ public class FinishedTaskRecycleAdapter extends RecyclerView.Adapter<RecyclerVie
         void initUI(final DownloadInfo downloadInfo) {
             tv_name.setText(downloadInfo.getName());
             tv_size.setText(FileUtil.formatFileSize(downloadInfo.getTotalSize()));
-            bt_action.setStatus(DownloadButton.FINISHED);
+            bt_action.setStatus(DownloadStatusConstants.FINISHED);
             Glide.with(mContext).load(downloadInfo.getIcon()).into(iv_icon);
             bt_action.setOnClickListener(new View.OnClickListener() {
                 @Override

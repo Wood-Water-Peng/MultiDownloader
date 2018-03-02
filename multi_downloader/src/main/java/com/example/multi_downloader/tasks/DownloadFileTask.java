@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.example.multi_downloader.DB.DBManager;
 import com.example.multi_downloader.bean.DownloadInfo;
+import com.example.multi_downloader.constants.DownloadStatusConstants;
 import com.example.multi_downloader.listeners.DownloadFileListener;
 
 import java.io.File;
@@ -54,9 +55,9 @@ public class DownloadFileTask implements Runnable {
                 int len;
                 long offset = lastLoadedSize;
                 long lastUpdateSize = 0L;
-                downloadInfo.setStatus(DownloadInfo.LOADING);
+                downloadInfo.setStatus(DownloadStatusConstants.DOWNLOADING);
                 DBManager.getInstance().updateInfo(downloadInfo);
-                while ((len = (is.read(buf, 0, buf.length))) != -1 && (downloadInfo.getStatus() != DownloadInfo.PAUSED)) {
+                while ((len = (is.read(buf, 0, buf.length))) != -1 && (downloadInfo.getStatus() != DownloadStatusConstants.PAUSED)) {
                     raf.write(buf, 0, len);
                     offset += len;
                     //更新下载进度
@@ -64,12 +65,13 @@ public class DownloadFileTask implements Runnable {
                     if (offset - lastUpdateSize > 1000 * 1000) {
                         lastUpdateSize = offset;
                         listener.onLoading(downloadInfo);
+                        Log.i(TAG, "downloading:" + downloadInfo.getName());
                     }
                     DBManager.getInstance().updateInfo(downloadInfo);
                 }
                 //通知监听者下载状态
                 //更新下载记录到数据库中
-                if (downloadInfo.getStatus() == DownloadInfo.PAUSED) {  //暂停
+                if (downloadInfo.getStatus() == DownloadStatusConstants.PAUSED) {  //暂停
                     listener.onLoadPaused(downloadInfo);
                 } else {
                     listener.onLoadFinished(downloadInfo);
@@ -84,6 +86,7 @@ public class DownloadFileTask implements Runnable {
             if (httpConnection != null) {
                 httpConnection.disconnect();
             }
+            Log.i(TAG, "downloading:" + downloadInfo.getStatus());
         }
     }
 }

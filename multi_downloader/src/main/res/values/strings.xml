@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">multi_downloader</string>
+
+    <!--下载button状态字段-->
+    <string name="btn_status_init">未下载</string>
+    <string name="btn_status_preparing">准备下载中</string>
+    <string name="btn_status_waiting">等待中</string>
+    <string name="btn_status_downloading">点击暂停</string>
+    <string name="btn_status_paused">点击下载</string>
+    <string name="btn_status_finished">安装</string>
+
+    <!--textView提示字段-->
+    <string name="tv_init">未下载</string>
+    <string name="tv_preparing">准备下载中...</string>
+    <string name="tv_waiting">等待中...</string>
+    <string name="tv_downloading">正在下载</string>
+    <string name="tv_paused">暂停中</string>
+    <string name="tv_finished">下载完成</string>
+
 </resources>

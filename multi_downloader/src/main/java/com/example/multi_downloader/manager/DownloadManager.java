@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.example.multi_downloader.DB.DBManager;
 import com.example.multi_downloader.bean.DownloadInfo;
+import com.example.multi_downloader.constants.DownloadStatusConstants;
 import com.example.multi_downloader.events.TaskFinishedEvent;
 import com.example.multi_downloader.listeners.DataListener;
 import com.example.multi_downloader.listeners.DownloadFileListener;
@@ -26,7 +27,7 @@ import java.util.List;
 public class DownloadManager implements DownloadFileListener {
 
     private static final String TAG = "DownloadManager";
-    private static DownloadManager instance;
+    //    private static DownloadManager instance;
     private DownloadEngine engine;
     private DownloadConfig config;
     private final List<DownloadInfo> downloadingCaches;    //任务---正在下载
@@ -41,14 +42,15 @@ public class DownloadManager implements DownloadFileListener {
     }
 
     public static DownloadManager getInstance(DownloadConfig config) {
-        synchronized (DownloadManager.class) {
-            if (instance == null) {
-                synchronized (DownloadManager.class) {
-                    instance = new DownloadManager(config);
-                }
-            }
-        }
-        return instance;
+//        synchronized (DownloadManager.class) {
+//            if (instance == null) {
+//                synchronized (DownloadManager.class) {
+//                    instance = new DownloadManager(config);
+//                }
+//            }
+//        }
+//        return instance;
+        return new DownloadManager(config);
     }
 
     /**
@@ -127,10 +129,10 @@ public class DownloadManager implements DownloadFileListener {
         DataListener listener = downloadInfo.getListener();
         if (listener != null) {
             int preStatus = downloadInfo.getPreStatus();
-            Log.i(TAG,"上一个状态是: "+preStatus);
-            if (preStatus == DownloadInfo.NONE) {
+            Log.i(TAG, "上一个状态是: " + preStatus);
+            if (preStatus == DownloadStatusConstants.INIT) {
                 listener.onInit();
-            } else if (preStatus == DownloadInfo.PAUSED) {
+            } else if (preStatus == DownloadStatusConstants.PAUSED) {
                 listener.onPaused();
             }
         }
@@ -166,7 +168,7 @@ public class DownloadManager implements DownloadFileListener {
     private void resetWaitingTasks() {
         if (waitingCaches.size() > 0) {
             for (DownloadInfo item : waitingCaches) {
-                item.setStatus(DownloadInfo.NONE);
+                item.setStatus(DownloadStatusConstants.INIT);
                 //更新界面
                 DataListener listener = item.getListener();
                 if (listener != null) {
@@ -233,6 +235,7 @@ public class DownloadManager implements DownloadFileListener {
                 //更新界面
                 DataListener listener = info.getListener();
                 if (listener != null) {
+                    Log.i(TAG, "---onLoading---");
                     listener.onLoading();
                 }
             }

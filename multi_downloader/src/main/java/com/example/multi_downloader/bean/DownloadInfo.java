@@ -13,13 +13,6 @@ import org.greenrobot.greendao.annotation.Unique;
  */
 @Entity
 public class DownloadInfo {
-    public static final int LOADING = 1;
-    public static final int PAUSED = 2;
-    public static final int ERROR = 3;
-    public static final int FINISHED = 4;
-    public static final int WAITING = 5; //等待下载中
-    public static final int NONE = 6;
-    public static final int READY = 7; //准备下下载中
 
     @Id(autoincrement = true)
     private Long key;

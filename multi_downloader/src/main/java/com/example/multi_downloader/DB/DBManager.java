@@ -7,6 +7,7 @@ import com.example.multi_downloader.bean.DaoMaster;
 import com.example.multi_downloader.bean.DaoSession;
 import com.example.multi_downloader.bean.DownloadInfo;
 import com.example.multi_downloader.bean.DownloadInfoDao;
+import com.example.multi_downloader.constants.DownloadStatusConstants;
 
 import java.util.List;
 
@@ -67,11 +68,11 @@ public class DBManager {
     }
 
     public List<DownloadInfo> getLoadingInfos() {
-        return daoSession.getDownloadInfoDao().queryBuilder().where(DownloadInfoDao.Properties.Status.eq(DownloadInfo.LOADING)).list();
+        return daoSession.getDownloadInfoDao().queryBuilder().where(DownloadInfoDao.Properties.Status.eq(DownloadStatusConstants.DOWNLOADING)).list();
     }
 
     public List<DownloadInfo> getFinishedLoadingInfos() {
-        return daoSession.getDownloadInfoDao().queryBuilder().where(DownloadInfoDao.Properties.Status.eq(DownloadInfo.FINISHED)).list();
+        return daoSession.getDownloadInfoDao().queryBuilder().where(DownloadInfoDao.Properties.Status.eq(DownloadStatusConstants.FINISHED)).list();
     }
 
     public List<DownloadInfo> getAllInfos() {
